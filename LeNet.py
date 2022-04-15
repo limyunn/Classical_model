@@ -4,15 +4,15 @@ import tensorflow as tf
 class LeNet(Model):
     def __init__(self):
         super(LeNet,self).__init__()
-        self.c1=layers.Conv2D(filters=6,kernel_size=(5,5),padding='valid',strides=1,activation='sigmoid')
-        self.p1=layers.MaxPooling2D(pool_size=(2,2),strides=2)
-        self.c2=layers.Conv2D(filters=16,kernel_size=(5,5),padding='valid',activation='sigmoid')
-        self.p2=layers.MaxPooling2D(pool_size=(2,2),strides=2)
+        self.c1 = layers.Conv2D(filters=6,kernel_size=(5,5),padding='valid',strides=1,activation='sigmoid')
+        self.p1 = layers.MaxPooling2D(pool_size=(2,2),strides=2)
+        self.c2 = layers.Conv2D(filters=16,kernel_size=(5,5),padding='valid',activation='sigmoid')
+        self.p2 = layers.MaxPooling2D(pool_size=(2,2),strides=2)
 
-        self.flatten=layers.Flatten()
-        self.d1=layers.Dense(120,activation='sigmoid')
-        self.d2=layers.Dense(84,activation='sigmoid')
-        self.d3=layers.Dense(10,activation='softmax')
+        self.flatten = layers.Flatten()
+        self.d1 = layers.Dense(120,activation='sigmoid')
+        self.d2 = layers.Dense(84,activation='sigmoid')
+        self.d3 = layers.Dense(10,activation='softmax')
 
 
     def call(self,x):
