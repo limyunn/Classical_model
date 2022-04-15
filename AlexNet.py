@@ -22,12 +22,12 @@ class AlexNet(Model):
                                 activation='relu')
         self.p3 = layers.MaxPooling2D(pool_size=(3, 3), strides=2)
 
-        self.flatten=layers.Flatten()
-        self.f1=layers.Dense(2048,activation='relu')
-        self.d1=layers.Dropout(0.5)
-        self.f2=layers.Dense(2048,activation='relu')
-        self.d2=layers.Dropout(0.5)
-        self.f3=layers.Dense(1000,activation='softmax')
+        self.flatten = layers.Flatten()
+        self.f1 = layers.Dense(2048,activation='relu')
+        self.d1 = layers.Dropout(0.5)
+        self.f2 = layers.Dense(2048,activation='relu')
+        self.d2 = layers.Dropout(0.5)
+        self.f3 = layers.Dense(1000,activation='softmax')
 
     def call(self,x):
         x=self.c1(x)
