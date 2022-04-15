@@ -4,10 +4,10 @@ import tensorflow as tf
 class AlexNet(Model):
     def __init__(self):
         super(AlexNet,self).__init__()
-        self.c1 = layers.Conv2D(filters=96,kernel_size=(3,3),strides=1,padding='valid')
-        self.b1 = layers.BatchNormalization()
-        self.a1 = layers.Activation('relu')
-        self.p1 = layers.MaxPooling2D(pool_size=(3,3),strides=2)
+        self.c1=layers.Conv2D(filters=96,kernel_size=(3,3),strides=1,padding='valid')
+        self.b1=layers.BatchNormalization()
+        self.a1=layers.Activation('relu')
+        self.p1=layers.MaxPooling2D(pool_size=(3,3),strides=2)
 
         self.c2 = layers.Conv2D(filters=256, kernel_size=(3, 3), strides=1, padding='valid')
         self.b2 = layers.BatchNormalization()
