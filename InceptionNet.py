@@ -3,7 +3,7 @@ from tensorflow.keras.layers import Conv2D,\
     BatchNormalization,Activation,AveragePooling2D,GlobalAveragePooling2D,Dense,MaxPooling2D
 import tensorflow as tf
 
-class Conv_BN_ReLU(Model):
+class Conv_BN_ReLU(Model):#将卷积层、批归一化层和激活函数层封装
     def __init__(self,ch,kernel_size=3,strides=1,padding='same'):
         super(Conv_BN_ReLU,self).__init__()
         self.model=Sequential([
@@ -25,7 +25,7 @@ class InceptionBlock(Model):
         self.c1=Conv_BN_ReLU(ch,kernel_size=1,strides=strides)
         self.c2_1=Conv_BN_ReLU(ch,kernel_size=1,strides=strides)
         self.c2_2=Conv_BN_ReLU(ch,kernel_size=3,strides=1)
-        self.c3_1=Conv_BN_ReLU(ch,kernel_size=3, strides=strides)
+        self.c3_1=Conv_BN_ReLU(ch,kernel_size=1, strides=strides)
         self.c3_2=Conv_BN_ReLU(ch,kernel_size=5,strides=1)
         self.p4_1=MaxPooling2D(ch,pool_size=3,strides=1)
         self.c4_2=Conv_BN_ReLU(ch,kernel_size=3,strides=strides)
@@ -67,8 +67,8 @@ class InceptionNet(Model):
                     block=InceptionBlock(self.out_channels,strides=1)
                 self.blocks.add(block)
             self.out_channels*=2
-            self.p1=GlobalAveragePooling2D()
-            self.d1=Dense(num_classes,activation='softmax')
+        self.p1=GlobalAveragePooling2D()
+        self.d1=Dense(num_classes,activation='softmax')
 
     def call(self,x):
         x=self.c1(x)
