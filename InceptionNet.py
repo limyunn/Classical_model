@@ -49,7 +49,7 @@ class InceptionBlock(Model):
 
 
     def call(self,x):
-        x=self.c1(x)
+        x1=self.c1(x)
         x2_1=self.c2_1(x)
         x2_2=self.c2_2(x2_1)
         x3_1=self.c3_1(x)
@@ -57,7 +57,7 @@ class InceptionBlock(Model):
         x4_1=self.p4_1(x)
         x4_2=self.c4_2(x4_1)
        #concat along axis=channel
-        x=tf.concat([x,x2_2,x3_2,x4_2],axis=3)
+        x=tf.concat([x1,x2_2,x3_2,x4_2],axis=3)
         return x
 
 ###############################################    model   ###############################################
