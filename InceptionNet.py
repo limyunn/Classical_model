@@ -4,10 +4,10 @@ from tensorflow.keras.layers import Conv2D,\
 import tensorflow as tf
 
 class Conv_BN_ReLU(Model):#将卷积层、批归一化层和激活函数层封装
-    def __init__(self,ch,kernel_size=3,strides=1,padding='same'):
+    def __init__(self,filter_num,kernel_size=3,strides=1,padding='same'):
         super(Conv_BN_ReLU,self).__init__()
         self.model=Sequential([
-            Conv2D(ch,kernel_size=kernel_size,strides=strides,padding=padding),
+            Conv2D(filter_num,kernel_size=kernel_size,strides=strides,padding=padding),
             BatchNormalization(),
             Activation('relu')
         ])
@@ -17,18 +17,40 @@ class Conv_BN_ReLU(Model):#将卷积层、批归一化层和激活函数层封�
         x=self.model(x)
         return x
 
+# 定义Inception模块
+#---------------------------------------------------------
+'''在第一个分支branch1上不做改变
+   在第二个分支branch2上先经过一个1x1的卷积层，然后再经过3x3的卷积层。
+   在第三个分支branch3上也要先经过一个1x1的卷积层，然后再经过5x5的卷积层。
+   在第四个分支branch4上先经过一个3x3的max pooling, 然后再使用1x1的卷积层进行降维。
+InceptionV1模块结构：
+
+                                 特征拼接
+           /              /                   \                  \
+        1x1 conv      3x3 conv             5x5 conv        1x1 conv
+          |              |                     |                  |
+          |           1x1 conv             1x1 conv        3x3 max pooling
+           \              \                   /                  /
+                                 上一层
+
+    四个分支，分别做卷积，然后拼接输出。
+GoogleNet类
+
+'''
+#---------------------------------------------------------
+
 class InceptionBlock(Model):
-    def __init__(self,ch,strides=1):
+    def __init__(self,filter_num,strides=1):
         super(InceptionBlock,self).__init__()
-        self.ch=ch
+        self.ch=filter_num
         self.strides=strides
-        self.c1=Conv_BN_ReLU(ch,kernel_size=1,strides=strides)
-        self.c2_1=Conv_BN_ReLU(ch,kernel_size=1,strides=strides)
-        self.c2_2=Conv_BN_ReLU(ch,kernel_size=3,strides=1)
-        self.c3_1=Conv_BN_ReLU(ch,kernel_size=1, strides=strides)
-        self.c3_2=Conv_BN_ReLU(ch,kernel_size=5,strides=1)
-        self.p4_1=MaxPooling2D(ch,pool_size=3,strides=1)
-        self.c4_2=Conv_BN_ReLU(ch,kernel_size=3,strides=strides)
+        self.c1=Conv_BN_ReLU(filter_num,kernel_size=1,strides=strides)
+        self.c2_1=Conv_BN_ReLU(filter_num,kernel_size=1,strides=strides)
+        self.c2_2=Conv_BN_ReLU(filter_num,kernel_size=3,strides=1)
+        self.c3_1=Conv_BN_ReLU(filter_num,kernel_size=1, strides=strides)
+        self.c3_2=Conv_BN_ReLU(filter_num,kernel_size=5,strides=1)
+        self.p4_1=MaxPooling2D(filter_num,pool_size=3,strides=1)
+        self.c4_2=Conv_BN_ReLU(filter_num,kernel_size=3,strides=strides)
 
 
     def call(self,x):
@@ -51,13 +73,13 @@ class InceptionBlock(Model):
 '''
 #---------------------------------------------------------
 class InceptionNet(Model):
-    def __init__(self,num_blocks,num_classes,init_ch=16,**kwargs):
+    def __init__(self,num_blocks,num_classes,init_filter_num=16,**kwargs):
         super(InceptionNet,self).__init__(**kwargs)
         self.num_blocks=num_blocks
-        self.in_channels=init_ch
-        self.out_channels=init_ch
-        self.init_ch=init_ch
-        self.c1=Conv_BN_ReLU(init_ch)
+        self.in_channels=init_filter_num
+        self.out_channels=init_filter_num
+        self.init_ch=init_filter_num
+        self.c1=Conv_BN_ReLU(init_filter_num)
         self.blocks=Sequential()
         for block_id in range(num_blocks):
             for layer_id in range (2):
