@@ -47,7 +47,6 @@ class InceptionBlock(Model):
         self.p4_1=MaxPooling2D(pool_size=3,strides=1)
         self.c4_2=Conv_BN_ReLU(f6,kernel_size=3,strides=strides)
 
-
     def call(self,x):
         x1=self.c1(x)
         x2_1=self.c2_1(x)
@@ -64,6 +63,7 @@ class InceptionBlock(Model):
 class GoogLeNet(Model):
     def __init__(self):
         super(GoogLeNet,self).__init__()
+        self.aux_or_not=False
         # Stage 1
         self.c1=Conv_BN_ReLU(64, kernel_size=7, strides=2, padding="same")
         self.p1=MaxPooling2D(pool_size=3,strides=2)
@@ -77,9 +77,13 @@ class GoogLeNet(Model):
         self.p3=MaxPooling2D(pool_size=3,strides=2,padding='same')
         # Stage 4
         self.inception3=InceptionBlock(192, 96, 208, 16, 48, 64,strides=1)
+        if self.aux_or_not:
+            self.aux1=InceptionAux(1000)
         self.inception4=InceptionBlock(160, 112, 224, 24, 64, 64,strides=1)
         self.inception5=InceptionBlock(128, 128, 256, 24, 64, 64,strides=1)
         self.inception6=InceptionBlock(112, 144, 288, 32, 64, 64,strides=1)
+        if self.aux_or_not:
+            self.aux2=InceptionAux(1000)
         self.inception7=InceptionBlock(256, 160, 320, 32, 128, 128,strides=1)
         self.p4=MaxPooling2D(pool_size=3,strides=2,padding='same')
         # Stage 5
@@ -103,9 +107,13 @@ class GoogLeNet(Model):
         x=self.p3(x)
 
         x=self.inception3(x)
+        if self.aux_or_not:
+            return self.aux1(x)
         x=self.inception4(x)
         x=self.inception5(x)
         x=self.inception6(x)
+        if self.aux_or_not:
+            return self.aux2(x)
         x=self.inception7(x)
         x=self.p4(x)
 
@@ -117,39 +125,41 @@ class GoogLeNet(Model):
         y=self.dense(x)
 
         return y
+
+class InceptionAux(layers.Layer):
+    def __init__(self, num_classes, **kwargs):
+        super(InceptionAux, self).__init__(**kwargs)
+        self.averagePool = layers.AvgPool2D(pool_size=5, strides=3)
+        self.conv = layers.Conv2D(128, kernel_size=1, activation="relu")
+
+        self.fc1 = layers.Dense(1024, activation="relu")
+        self.fc2 = layers.Dense(num_classes)
+        self.softmax = layers.Softmax()
+
+    def call(self, inputs, **kwargs):
+        # aux1: N x 512 x 14 x 14, aux2: N x 528 x 14 x 14
+        x = self.averagePool(inputs)
+        # aux1: N x 512 x 4 x 4, aux2: N x 528 x 4 x 4
+        x = self.conv(x)
+        # N x 128 x 4 x 4
+        x = layers.Flatten()(x)
+        x = layers.Dropout(rate=0.5)(x)
+        # N x 2048
+        x = self.fc1(x)
+        x = layers.Dropout(rate=0.5)(x)
+        # N x 1024
+        x = self.fc2(x)
+        # N x num_classes
+        x = self.softmax(x)
+
+        return x
+
 if __name__ == '__main__':
     model=GoogLeNet()
     x=tf.random.normal([1,224,224,3])
     y=model(x)
     print(y)
 
-# class InceptionAux(layers.Layer):
-#     def __init__(self, num_classes, **kwargs):
-#         super(InceptionAux, self).__init__(**kwargs)
-#         self.averagePool = layers.AvgPool2D(pool_size=5, strides=3)
-#         self.conv = layers.Conv2D(128, kernel_size=1, activation="relu")
-#
-#         self.fc1 = layers.Dense(1024, activation="relu")
-#         self.fc2 = layers.Dense(num_classes)
-#         self.softmax = layers.Softmax()
-#
-#     def call(self, inputs, **kwargs):
-#         # aux1: N x 512 x 14 x 14, aux2: N x 528 x 14 x 14
-#         x = self.averagePool(inputs)
-#         # aux1: N x 512 x 4 x 4, aux2: N x 528 x 4 x 4
-#         x = self.conv(x)
-#         # N x 128 x 4 x 4
-#         x = layers.Flatten()(x)
-#         x = layers.Dropout(rate=0.5)(x)
-#         # N x 2048
-#         x = self.fc1(x)
-#         x = layers.Dropout(rate=0.5)(x)
-#         # N x 1024
-#         x = self.fc2(x)
-#         # N x num_classes
-#         x = self.softmax(x)
-#
-#         return x
 
 
 #---------------------------------------------------------
