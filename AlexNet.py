@@ -2,8 +2,10 @@ from tensorflow.keras import Model,layers,Sequential
 import tensorflow as tf
 
 class AlexNet(Model):
-    def __init__(self):
+    def __init__(self,numlayers=1):
         super(AlexNet,self).__init__()
+        if numlayers<2:
+            raise ValueError('number of layers should be at least two layers')
         self.c1 = layers.Conv2D(filters=96,kernel_size=(3,3),strides=1,padding='valid')
         self.b1 = layers.BatchNormalization()
         self.a1 = layers.Activation('relu')
@@ -57,10 +59,9 @@ class AlexNet(Model):
         return y
 
 
-
-
 if __name__ == '__main__':
-    model=AlexNet()
+    model=AlexNet(numlayers=3)
     x=tf.random.normal([1,32,32,3])
     y=model(x)
     print(y)
+
