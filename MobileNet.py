@@ -32,7 +32,9 @@ def _depthwise_conv_block(input_tensor,filter_num,kernel_size=(3,3),stride=1,blo
     return x
 
 
-def MobileNet(input_shape=[224,224,3],num_classes=1000):
+def MobileNet(input_shape=[224,224,3],
+              num_classes=1000,
+              include_top=True):
     inputs=Input(shape=input_shape)
     # 224,224,3 -> 112,112,32
     stem=_conv_block(inputs,32,stride=2)
@@ -70,15 +72,20 @@ def MobileNet(input_shape=[224,224,3],num_classes=1000):
     # 14,14,512 -> 7,7,1024
     x = _depthwise_conv_block(x, 1024,stride=2, block_id=12)
     x = _depthwise_conv_block(x, 1024, block_id=13)
-    print(x.shape)
 
-    # 7,7,1024 -> 1,1,1024
-    x=AveragePooling2D(pool_size=(7,7),name='avg_pool')(x)
-    x=Flatten(name='flatten')(x)
-    x=Dense(num_classes,activation='softmax',name='dense')(x)
+    # building classifier
+    if include_top is True:
+         # 7,7,1024 -> 1,1,1024
+         x=AveragePooling2D(pool_size=(7,7),name='avg_pool')(x)
+
+         # 1,1,1024 -> [batch,1024]
+         x=Flatten(name='flatten')(x)
+         output=Dense(num_classes,activation='softmax',name='dense')(x)
+    else:
+        output=x
 
     inputs=inputs
-    model = Model(inputs, x, name='mobilenetv1')
+    model = Model(inputs,output, name='mobilenetv1')
     return model
 
 
